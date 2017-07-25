@@ -17,6 +17,8 @@ use LinguaLeo\ExpertSender\Chunks\ReceiversChunk;
 use LinguaLeo\ExpertSender\Chunks\SimpleChunk;
 use LinguaLeo\ExpertSender\Chunks\SnippetChunk;
 use LinguaLeo\ExpertSender\Chunks\SnippetsChunk;
+use LinguaLeo\ExpertSender\Chunks\AttachmentChunk;
+use LinguaLeo\ExpertSender\Chunks\AttachmentsChunk;
 use LinguaLeo\ExpertSender\Chunks\WhereChunk;
 use LinguaLeo\ExpertSender\Chunks\WhereConditionsChunk;
 use LinguaLeo\ExpertSender\Entities\Column;
@@ -353,20 +355,28 @@ class ExpertSender implements LoggerAwareInterface
      * @param $transactionId
      * @param $receiver
      * @param $snippets
+     * @param $attachments
      * @return \LinguaLeo\ExpertSender\ApiResult
      */
-    public function sendTransactional($transactionId, $receiver, $snippets)
+    public function sendTransactional($transactionId, $receiver, $snippets, $attachments)
     {
         $snippetChunks = [];
         foreach($snippets as $snippet) {
             $snippetChunks[] = new SnippetChunk($snippet);
         }
 
+        $attachmentChunks = [];
+        foreach($attachments as $attachment) {
+            $attachmentChunks[] = new AttachmentChunk($attachment);
+        }
+
         $receiverChunk = new ReceiverChunk($receiver);
         $snippetsChunks = new SnippetsChunk($snippetChunks);
+        $attachmentsChunks = new AttachmentsChunk($attachmentChunks);
         $dataChunk = new DataChunk();
         $dataChunk->addChunk($receiverChunk);
         $dataChunk->addChunk($snippetsChunks);
+        $dataChunk->addChunk($attachmentsChunks);
         $headerChunk = $this->getHeaderChunk($dataChunk);
 
         $url = sprintf($this->transactionalUrlPattern, $transactionId);
